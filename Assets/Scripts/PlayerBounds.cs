@@ -8,14 +8,26 @@ public class PlayerBounds : MonoBehaviour
     [SerializeField] private Transform vectorLeft;
     [SerializeField] private Transform vectorRight;
 
+    private Rigidbody rb;
 
-    void LateUpdate()
+    void Awake()
     {
-        Vector3 viewPosition = transform.position;
-        viewPosition.z = Mathf.Clamp(viewPosition.z, vectorBottom.transform.position.z, vectorForward.transform.position.z);
-        viewPosition.x = Mathf.Clamp(viewPosition.x, vectorLeft.transform.position.x, vectorRight.transform.position.x);
+        rb = GetComponent<Rigidbody>();
+    }
 
-        transform.position = viewPosition;
     
+    void FixedUpdate()
+    {
+
+        Vector3 nextPosition = rb.position + PlayerController.Instance.GetPlayerVelocity() * Time.fixedDeltaTime;
+        float clampedX = Mathf.Clamp(nextPosition.x, vectorLeft.position.x, vectorRight.position.x);
+        float clampedZ = Mathf.Clamp(nextPosition.z, vectorBottom.position.z, vectorForward.position.z);
+        
+        Vector3 clampedNextPosition = new Vector3(clampedX, nextPosition.y, clampedZ);
+
+        //Velocity = Distance/Time. Basic physics formula.
+        Vector3 clampedVelocity = (clampedNextPosition - rb.position) / Time.fixedDeltaTime;
+
+        rb.linearVelocity = clampedVelocity;
     }
 }
